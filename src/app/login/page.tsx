@@ -2,9 +2,11 @@
 import React, { useState } from 'react';
 import api from '@/lib/api';
 import { useRouter } from 'next/navigation';
+import { useUser } from '../context/userContext';
 
 const LoginPage = () => {
   const router = useRouter()
+  const { setUser } = useUser();
   const [ email, setEmail ] = useState('')
   const [ password, setPassword ] = useState('')
 
@@ -24,6 +26,7 @@ const LoginPage = () => {
      }
      if(data) {
       localStorage.setItem('user', JSON.stringify(data))
+      setUser(data);
 
      }
      router.push('/booklist')

@@ -36,14 +36,23 @@ const role = user?.role
   return (
     <div className="min-h-screen bg-gray-50 p-6">
   <div className="max-w-6xl mx-auto">
-    <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">📚 Find Your Favourite Books</h2>
+    <h1 className="text-3xl font-bold text-center text-gray-800 mb-8">
+    Find Your Favourite Book 📚
+   </h1>
+
+
+
     {user?.role === 'seller' && (
-            <Link href="/booklist/addbook">
-              <button className="bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 px-4 rounded-lg transition duration-300">
-                + Add Book
-              </button>
-            </Link>
+            <div className="flex justify-end mb-4">
+              <Link href="/booklist/addbook">
+                <button className="bg-blue-500 hover:bg-yellow-600 text-white font-medium py-2 px-4 rounded-lg transition duration-300">
+                  + Add Book
+                </button>
+              </Link>
+            </div>
+
           )}
+
     {book.length === 0 ? (
       <p className="text-center text-gray-500 text-lg">No books found</p>
     ) : (
@@ -56,12 +65,17 @@ const role = user?.role
              <img src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${b.image}`}alt={b.title} className="w-full h-auto object-cover rounded-lg mb-4" /> 
 
             <h3 className="text-xl font-semibold text-gray-800 mb-2">{b.title}</h3>
-            <p className="text-gray-600 mb-1">
-              <span className="font-medium">Author:</span> {b.author}
+            <p className="text-gray-800 mb-1">
+              <span className="font-medium">Author:</span> {b.authorname}
             </p>
             {b.price && (
               <p className="text-gray-600">
                 <span className="font-medium">Price:</span> ₹{b.price}
+              </p>
+            )}
+            {b.rating && (
+              <p className="text-gray-600">
+                <span className="font-medium">rating:</span> {b.rating}
               </p>
             )}
 

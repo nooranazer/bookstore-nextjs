@@ -2,11 +2,12 @@
 import api from '@/lib/api'
 import BookType from '@/types/BookType'
 import { Box, Button, TextField, Typography, Paper } from '@mui/material'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 const EditBook = () => {
   const { id } = useParams()
+  const router = useRouter()
   const [book, setBook] = useState<BookType>({
     title: '',
     authorname: '',
@@ -72,6 +73,7 @@ const EditBook = () => {
       .then((res) => {
         // setBook(res.data.data)
         alert('Book updated successfully!')
+        router.push(`/booklist/${id}`)
       })
       .catch((err) => {
         console.error('Can’t update:', err)

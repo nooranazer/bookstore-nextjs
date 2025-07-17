@@ -4,84 +4,86 @@ import BookType from '@/types/BookType'
 import { Box, Button, TextField, Typography, Paper } from '@mui/material'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import * as yup from 'yup'
+import { useForm, Controller } from 'react-hook-form'
+import { yupResolver } from '@hookform/resolvers/yup'
+
+const schema = yup.object().shape({
+  title: yup.string().required('Title is required'),
+  authorname: yup.string().required('Author name is required'),
+  price: yup
+    .number()
+    .typeError('Price must be a number')
+    .positive('Price must be positive')
+    .required('Price is required'),
+  description: yup.string().required('Description is required'),
+})
 
 const EditBook = () => {
   const { id } = useParams()
   const router = useRouter()
-  const [book, setBook] = useState<BookType>({
-    title: '',
-    authorname: '',
-    price: 0,
-    image: '',
-    role: '',
-   rating: 0,
-    category: '',
-    description: ''
-  })
-
   const [previewUrl, setPreviewUrl] = useState<string>('')
+  const [selectedImage, setSelectedImage] = useState<File | string>('')
+
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm<BookType>({
+    resolver: yupResolver(schema) as any,
+  })
 
   useEffect(() => {
     const token = localStorage.getItem('token')
-    api.get(`/books/view/${id}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      }
-    })
+    api
+      .get(`/books/view/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
       .then((res) => {
-        setBook(res.data.data)
-        setPreviewUrl(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${res.data.data.image}`)
+        const data = res.data.data
+        setValue('title', data.title)
+        setValue('authorname', data.authorname)
+        setValue('price', data.price)
+        setValue('description', data.description)
+        setSelectedImage(data.image)
+        setPreviewUrl(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${data.image}`)
       })
-      .catch((err) => {
-        console.error(err)
-      })
-  }, [id])
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setBook({ ...book, [name]: name === 'price' ? Number(value) : value })
-  }
+      .catch((err) => console.error(err))
+  }, [id, setValue])
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      setBook({ ...book, image: file })
+      setSelectedImage(file)
       setPreviewUrl(URL.createObjectURL(file))
     }
   }
 
-  const handleUpdateButton = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-
+  const onSubmit = (data: BookType) => {
     const formData = new FormData()
-    formData.append('title', book.title)
-    formData.append('authorname', book.authorname)
-    formData.append('price', book.price.toString())
-    formData.append('description', book.description)
+    formData.append('title', data.title)
+    formData.append('authorname', data.authorname)
+    formData.append('price', data.price.toString())
+    formData.append('description', data.description)
 
-    if (book.image instanceof File) {
-      formData.append('image', book.image)
+    if (selectedImage instanceof File) {
+      formData.append('image', selectedImage)
     }
 
     const token = localStorage.getItem('token')
-
-    api.patch(`/books/update/${id}`, formData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      }
-    })
-      .then((res) => {
-        // setBook(res.data.data)
+    api
+      .patch(`/books/update/${id}`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(() => {
         alert('Book updated successfully!')
         router.push(`/booklist/${id}`)
       })
-      .catch((err) => {
-        console.error('Can’t update:', err)
-      })
+      .catch((err) => console.error('Can’t update:', err))
   }
-
-  if (!book) return <p>Loading...</p> 
-
 
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: '#f5f5f5', py: 8, px: 2 }}>
@@ -107,46 +109,84 @@ const EditBook = () => {
           />
         )}
 
-        <Box component="form" onSubmit={handleUpdateButton} noValidate autoComplete="off" sx={{ mt: 3 }} >
-          <TextField
-            fullWidth
-            label="Title"
-            variant="outlined"
-            margin="normal"
+        <Box
+          component="form"
+          onSubmit={handleSubmit(onSubmit)}
+          noValidate
+          autoComplete="off"
+          sx={{ mt: 3 }}
+        >
+          <Controller
             name="title"
-            value={book.title}
-            onChange={handleChange}
+            control={control}
+            defaultValue=""
+            render={({ field }) => (
+              <TextField
+                {...field}
+                fullWidth
+                label="Title"
+                variant="outlined"
+                margin="normal"
+                error={!!errors.title}
+                helperText={errors.title?.message}
+              />
+            )}
           />
-          <TextField
-            fullWidth
-            label="Author"
-            variant="outlined"
-            margin="normal"
+
+          <Controller
             name="authorname"
-            value={book.authorname}
-            onChange={handleChange}
+            control={control}
+            defaultValue=""
+            render={({ field }) => (
+              <TextField
+                {...field}
+                fullWidth
+                label="Author"
+                variant="outlined"
+                margin="normal"
+                error={!!errors.authorname}
+                helperText={errors.authorname?.message}
+              />
+            )}
           />
-          <TextField
-            fullWidth
-            label="Price"
-            variant="outlined"
-            type="number"
-            margin="normal"
+
+          <Controller
             name="price"
-            value={book.price}
-            onChange={handleChange}
+            control={control}
+            defaultValue={0}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                fullWidth
+                label="Price"
+                type="number"
+                variant="outlined"
+                margin="normal"
+                error={!!errors.price}
+                helperText={errors.price?.message}
+              />
+            )}
           />
-          <TextField
-            fullWidth
-            label="Description"
-            variant="outlined"
-            multiline
-            rows={4}
-            margin="normal"
+
+          <Controller
             name="description"
-            value={book.description}
-            onChange={handleChange}
+            control={control}
+            defaultValue=""
+            render={({ field }) => (
+              <TextField
+                {...field}
+                fullWidth
+                label="Description"
+                variant="outlined"
+                multiline
+                rows={4}
+                margin="normal"
+                error={!!errors.description}
+                helperText={errors.description?.message}
+              />
+            )}
           />
+
           <Button
             variant="outlined"
             component="label"

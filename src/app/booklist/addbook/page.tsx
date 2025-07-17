@@ -1,51 +1,108 @@
 'use client'
 import api from '@/lib/api'
 import BookType, { AddBookType } from '@/types/BookType'
-import { Box, Button, Paper, TextField, Typography } from '@mui/material'
+import { yupResolver } from '@hookform/resolvers/yup'
+import {
+  Box,
+  Button,
+  Paper,
+  TextField,
+  Typography,
+  useMediaQuery
+} from '@mui/material'
+import { useRouter } from 'next/navigation'
 import React, { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import * as yup from 'yup'
+
+const schema = yup.object().shape({
+  title: yup.string().required('Title is required'),
+  authorname: yup.string().required('Author name is required'),
+  price: yup.number().required().positive().typeError('Price must be a number'),
+  stock: yup.number().required().typeError("Must be a number").min(0),
+  description: yup.string().required('Description is required'),
+  category: yup.string().required('Category is required'),
+  rating: yup
+    .number()
+    .min(0)
+    .max(5)
+    .typeError('Rating must be a number between 0 and 5')
+    .required('Rating is required'),
+  image: yup
+  .mixed()
+  .required('Image is required')
+  .test('fileType', 'Only image files are allowed', (value) => {
+    if (value instanceof File) {
+      return ['image/jpeg', 'image/png', 'image/webp'].includes(value.type)
+    }
+    return false
+  })
+
+
+})
 
 const AddBook = () => {
-  const [book, setBook] = useState<AddBookType>({
-    title: '',
-    authorname: '',
-    price: 0,
-    stock: 0,  
-    image: '',
-    description: '',
-    rating: 0,
-    category: ''
+  const router = useRouter()
+  // const [book, setBook] = useState<AddBookType>({
+  //   title: '',
+  //   authorname: '',
+  //   price: 0,
+  //   stock: 0,
+  //   image: '',
+  //   description: '',
+  //   rating: 0,
+  //   category: ''
+  // })
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+    reset
+  } = useForm<AddBookType>({
+    resolver: yupResolver(schema) as any,
+    defaultValues: {
+      title: '',
+      authorname: '',
+      price: 0,
+      stock: null,
+      description: '',
+      rating: null,
+      category: '',
+      image: undefined
+    }
   })
 
   const [previewUrl, setPreviewUrl] = useState<string>('')
+  const isMobile = useMediaQuery('(max-width:768px)')
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setBook({ ...book, [name]: name === 'price' ? Number(value) : value })
-  }
+  // const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const { name, value } = e.target
+  //   setBook({ ...book, [name]: name === 'price' ? Number(value) : value })
+  // }
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      setBook({ ...book, image: file })
+      setValue('image', file)
+      // setBook({ ...book, image: file })
       setPreviewUrl(URL.createObjectURL(file))
     }
   }
 
-  const handleAddButton = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-
+  const handleAddButton = async (data: AddBookType) => {
     const formData = new FormData()
-    formData.append('title', book.title)
-    formData.append('authorname', book.authorname)
-    formData.append('price', book.price.toString())
-    formData.append('description', book.description)
-    formData.append('stock', book.stock.toString())
-    formData.append('category', book.category)
-    formData.append('rating', book.rating.toString())
+    formData.append('title', data.title)
+    formData.append('authorname', data.authorname)
+    formData.append('price', data.price.toString())
+    formData.append('description', data.description)
+    formData.append('stock', data.stock ? data.stock.toString() : '0')
+    formData.append('category', data.category)
+    formData.append('rating', data.rating ? data.rating.toString() : '0')
 
-
-    if (book.image instanceof File) {
-      formData.append('image', book.image)
+    if (data.image instanceof File) {
+      formData.append('image', data.image)
     }
 
     const token = localStorage.getItem('token')
@@ -57,16 +114,18 @@ const AddBook = () => {
         }
       })
       alert('✅ Book Added Successfully!')
-      setBook({
-        title: '',
-        authorname: '',
-        price: 0,
-        stock:0,
-        image: '',
-        description: '',
-        rating: 0,
-        category: ''
-      })
+      reset()
+      router.push('/booklist')
+      // setBook({
+      //   title: '',
+      //   authorname: '',
+      //   price: 0,
+      //   stock:0,
+      //   image: '',
+      //   description: '',
+      //   rating: 0,
+      //   category: ''
+      // })
       setPreviewUrl('')
     } catch (err) {
       console.error('❌ Error adding book:', err)
@@ -75,19 +134,37 @@ const AddBook = () => {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', backgroundColor: '#f9f9f9', py: 8, px: 2 }}>
-      <Paper
-        elevation={4}
+    <Box
+      sx={{
+        minHeight: '100vh',
+        backgroundImage: 'url("/addbook.png")',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        px: 2,
+        py: 4
+      }}
+    >
+      <Box
         sx={{
-          maxWidth: 600,
-          mx: 'auto',
-          p: 4,
-          borderRadius: 3,
-          backgroundColor: 'white'
+          maxWidth: 900,
+          width: '100%',
+          p: isMobile ? 2 : 4,
+          borderRadius: 4,
+          backgroundColor: 'rgba(255, 255, 255, 0)', // no white background
+          backdropFilter: 'blur(3px)'
         }}
       >
-        <Typography variant="h4" align="center" gutterBottom>
-          📚 Add New Book
+        <Typography
+          variant="h4"
+          align="center"
+          gutterBottom
+          sx={{ fontWeight: 'bold', color: '#fff' }}
+        >
+         Add New Book
         </Typography>
 
         {previewUrl && (
@@ -100,106 +177,199 @@ const AddBook = () => {
 
         <Box
           component="form"
-          onSubmit={handleAddButton}
+          onSubmit={handleSubmit(handleAddButton)}
           noValidate
           autoComplete="off"
-          sx={{ mt: 2 }}
+          sx={{
+            display: 'flex',
+            flexDirection: isMobile ? 'column' : 'row',
+            gap: 3
+          }}
         >
-          <TextField
-            fullWidth
-            label="Title"
-            variant="outlined"
-            margin="normal"
-            name="title"
-            value={book.title}
-            onChange={handleChange}
-          />
-          <TextField
-            fullWidth
-            label="Author Name"
-            variant="outlined"
-            margin="normal"
-            name="authorname"
-            value={book.authorname}
-            onChange={handleChange}
-          />
-          <TextField
-            fullWidth
-            label="Price"
-            variant="outlined"
-            margin="normal"
-            type="number"
-            name="price"
-            value={book.price}
-            onChange={handleChange}
-          />
-          <TextField
-            fullWidth
-            label="Stock"
-            variant="outlined"
-            margin="normal"
-            type="number"
-            name="stock"
-            value={book.stock}
-            onChange={handleChange}
-            />
+          {/* Left Side */}
+          <Box sx={{ flex: 1 }}>
             <TextField
-            fullWidth
-            label="Category"
-            variant="outlined"
-            margin="normal"
-            name="category"
-            value={book.category}
-            onChange={handleChange}
-            />
-            <TextField
-            fullWidth
-            label="Rating"
-            variant="outlined"
-            margin="normal"
-            type="number"
-            name="rating"
-            value={book.rating}
-            onChange={handleChange}
-            />
-
-          <TextField
-            fullWidth
-            label="Description"
-            variant="outlined"
-            margin="normal"
-            name="description"
-            multiline
-            rows={4}
-            value={book.description}
-            onChange={handleChange}
-          />
-            <Button
-            variant="outlined"
-            component="label"
-            fullWidth
-            sx={{ mt: 2, mb: 2 }}
-            >
-            Upload Book Image
-            <input type="file" name="image" hidden onChange={handleImageChange} />
-            </Button>
-
-
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            sx={{
-              backgroundColor: '#4a91d8ff',
-              color: '#fff',
-              py: 1.2,
-              fontWeight: 'bold'
+              fullWidth
+              sx={{ 
+              '& fieldset': { borderColor: '#ddd' }, 
+              '&:hover fieldset': { borderColor: '#fff' } 
             }}
-          >
-            ➕ Add Book
-          </Button>
+              label="Title"
+              variant="outlined"
+              margin="normal"
+              {...register('title')}
+              error={!!errors.title}
+              helperText={errors.title?.message}
+              InputLabelProps={{ style: { color: '#fff' } }}
+              InputProps={{ style: { color: '#fff' } }}
+              FormHelperTextProps={{ style: { color: 'lightpink' } }}
+            />
+            <TextField
+              fullWidth
+              label="Author Name"
+              variant="outlined"
+              margin="normal"
+              sx={{ 
+              '& fieldset': { borderColor: '#ddd' }, 
+              '&:hover fieldset': { borderColor: '#fff' } 
+               }}
+              {...register('authorname')}
+              error={!!errors.authorname}
+              helperText={errors.authorname?.message}
+              InputLabelProps={{ style: { color: '#fff' } }}
+              InputProps={{ style: { color: '#fff' } }}
+              FormHelperTextProps={{ style: { color: 'lightpink' } }}
+            />
+            <TextField
+              fullWidth
+              label="Price"
+              variant="outlined"
+              margin="normal"
+              type="number"
+               sx={{ 
+              '& fieldset': { borderColor: '#ddd' }, 
+              '&:hover fieldset': { borderColor: '#fff' } 
+               }}
+              {...register('price')}
+              error={!!errors.price}
+              helperText={errors.price?.message}
+              InputLabelProps={{ style: { color: '#fff' } }}
+              InputProps={{ style: { color: '#fff' } }}
+              FormHelperTextProps={{ style: { color: 'lightpink' } }}
+            />
+            <TextField
+              fullWidth
+              label="Stock"
+              variant="outlined"
+              margin="normal"
+               sx={{ 
+              '& fieldset': { borderColor: '#ddd' }, 
+              '&:hover fieldset': { borderColor: '#fff' } 
+               }}
+              type="number"
+              {...register('stock')}
+              error={!!errors.stock}
+              helperText={errors.stock?.message}
+              InputLabelProps={{ style: { color: '#fff' } }}
+              InputProps={{ style: { color: '#fff' } }}
+              FormHelperTextProps={{ style: { color: 'lightpink' } }}
+            />
+            <TextField
+              fullWidth
+              label="Rating"
+              variant="outlined"
+              margin="normal"
+              type="number"
+               sx={{ 
+              '& fieldset': { borderColor: '#ddd' }, 
+              '&:hover fieldset': { borderColor: '#fff' } 
+               }}
+              {...register('rating')}
+              error={!!errors.rating}
+              helperText={errors.rating?.message}
+              InputLabelProps={{ style: { color: '#fff' } }}
+              InputProps={{ style: { color: '#fff' } }}
+              FormHelperTextProps={{ style: { color: 'lightpink' } }}
+            />
+          </Box>
+
+          {/* Right Side */}
+          <Box sx={{ flex: 1 }}>
+            <TextField
+              fullWidth
+              select
+              variant="outlined"
+              margin="normal"
+              {...register('category')}
+              error={!!errors.category}
+              helperText={errors.category?.message}
+              sx={{
+                backgroundColor: '#222',
+                color: '#fff',
+                '& select': { color: '#fff' },
+                '& fieldset': { borderColor: '#ddd' },
+                '&:hover fieldset': { borderColor: '#fff' }
+              }}
+              InputLabelProps={{ style: { color: '#fff' } }}
+              FormHelperTextProps={{ style: { color: 'lightpink' } }}
+              SelectProps={{
+                native: true
+              }}
+            >
+              <option value="">Select Category</option>
+              {[
+                'Fiction',
+                'Non-fiction',
+                'Comics',
+                'Education',
+                'Biography',
+                'Fantasy',
+                'Science',
+                'Other'
+              ].map((option) => (
+                <option key={option} value={option} style={{ backgroundColor: '#fff', color: '#000' }}>
+                  {option}
+                </option>
+              ))}
+            </TextField>
+
+
+            <TextField
+              fullWidth
+              label="Description"
+              variant="outlined"
+              margin="normal"
+               sx={{ 
+              '& fieldset': { borderColor: '#ddd' }, 
+              '&:hover fieldset': { borderColor: '#fff' } 
+               }}
+              {...register('description')}
+              error={!!errors.description}
+              helperText={errors.description?.message}
+              InputLabelProps={{ style: { color: '#fff' } }}
+              InputProps={{ style: { color: '#fff' } }}
+              FormHelperTextProps={{ style: { color: 'lightpink' } }}
+              multiline
+              rows={4}
+            />
+
+            <Button
+              variant="outlined"
+              component="label"
+              fullWidth
+              sx={{ mt: 2 ,
+              '& fieldset': { borderColor: '#ddd' }, 
+              '&:hover fieldset': { borderColor: '#fff' } 
+               }}
+            >
+              Upload Book Image
+              <input type="file" hidden onChange={handleImageChange} />
+            </Button>
+            {errors.image && (
+              <Typography color="lightpink" fontSize="0.9rem">
+                {errors.image.message}
+              </Typography>
+              
+              
+            )}
+
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              sx={{
+                mt: 3,
+                backgroundColor: '#4a91d8ff',
+                color: '#fff',
+                py: 1.2,
+                fontWeight: 'bold'
+              }}
+            >
+              ➕ Add Book
+            </Button>
+          </Box>
         </Box>
-      </Paper>
+      </Box>
     </Box>
   )
 }

@@ -2,7 +2,7 @@ type BookType = {
   title: string
   authorname: string
   price: number
-  image: string | File 
+  image?: string | File 
   role:string
   rating: number
   category: string 
@@ -15,8 +15,8 @@ export default BookType;
   title: string
   authorname: string
   price: number
-  stock: number  
-  rating: number
+  stock: number | null 
+  rating: number | null
   category: string  
   image: string | File 
   description: string

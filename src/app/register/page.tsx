@@ -2,29 +2,53 @@
 import React, { useState } from 'react';
 import api from '@/lib/api';
 import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import * as yup from 'yup'
+import { yupResolver } from '@hookform/resolvers/yup';
+
+//yup schema
+const schema = yup.object({
+  username: yup.string().required('Username is required'),
+  email: yup.string().email('Invalid email').required('Email is required'),
+  password: yup.string().min(6, 'Password must be at least 6 characters'),
+  role: yup.string().required('Role is required'),
+  image: yup
+    .mixed()
+    .required('Image is required')
+    .test('fileType', 'Only image files are allowed', (value) => {
+      if (value instanceof File) {
+        return ['image/jpeg', 'image/png', 'image/webp'].includes(value.type)
+      }
+      return false
+    })
+})
+
 
 
 const RegisterPage = () => {
   const router = useRouter()
-  const [ username, setUsername] = useState('')
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [role, setRole] = useState('');
- const [image, setImage] = useState<File | null>(null);
+  // const [ username, setUsername] = useState('')
+  // const [email, setEmail] = useState('');
+  // const [password, setPassword] = useState('');
+  // const [role, setRole] = useState('');
+  // const [image, setImage] = useState<File | null>(null);
+
+  const { register, handleSubmit, setValue, formState: { errors }, } = useForm({
+    resolver: yupResolver(schema),
+  })
 
   
-  const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleRegister = async (data: any) => {
+   // e.preventDefault();
 
     const formData = new FormData()
-    formData.append('username', username)
-    formData.append('email', email)
-    formData.append('password', password)
-    formData.append('role', role)
-    if (image) {
-    formData.append('image', image);
-  }
-     const res = await api.post('/auth/register', formData, {   
+    formData.append('username', data.username) //added data in validation
+    formData.append('email', data.email)
+    formData.append('password', data.password)
+    formData.append('role', data.role)
+    formData.append('image', data.image[0])
+
+    const res = await api.post('/auth/register', formData, {   
     }).then((res) => {
       const {token, data } = res.data
 
@@ -36,7 +60,7 @@ const RegisterPage = () => {
       }
       router.push('/booklist')
     }).catch((err) => {
-      console.log(err,"erorrrr........")
+     // console.log(err,"erorrrr........")
       alert(err.response.data.message)
     })
   }
@@ -53,60 +77,73 @@ const RegisterPage = () => {
         <h2 className="text-4xl font-bold text-white-800 mb-6">Create Account ✨</h2>
         <p className="text-sm text-gray-500 mb-10">Join the BookHive community</p>
 
-        <form className="space-y-6" onSubmit={handleRegister}>
+        <form className="space-y-6" onSubmit={handleSubmit(handleRegister)}>
   <div>
-    <label className="block mb-1 text-sm text-gray-600">Name</label>
+    <label className="block mb-1 text-sm text-white-600">Name</label>
     <input
       type="text"
-      onChange={(e) => setUsername(e.target.value)}
+      {...register ('username')}
+      //onChange={(e) => setUsername(e.target.value)}
       placeholder="Your name"
       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 text-black"
     />
+    {errors.username && <p className="text-red-500 text-sm mt-1">
+      {errors.username.message}</p>}
   </div>
 
   <div>
-    <label className="block mb-1 text-sm text-gray-600">Email</label>
+    <label className="block mb-1 text-sm text-white-600">Email</label>
     <input
       type="email"
-      value={email}
-      onChange={(e) => setEmail(e.target.value)}
+       {...register ('email')}
+      // value={email}
+      // onChange={(e) => setEmail(e.target.value)}
       placeholder="you@example.com"
       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 text-black"
     />
+    {errors.email && <p className="text-red-500 text-sm mt-1">
+      {errors.email.message}</p>}
   </div>
 
   <div>
-    <label className="block mb-1 text-sm text-gray-600">Password</label>
+    <label className="block mb-1 text-sm text-white-900">Password</label>
     <input
       type="password"
-      onChange={(e) => setPassword(e.target.value)}
+      {...register ('password')}
+      //onChange={(e) => setPassword(e.target.value)}
       placeholder="••••••••"
       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 text-black"
     />
+   {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
+
   </div>
 
   <div>
-    <label className="block mb-1 text-sm text-gray-600">Profile Image</label>
+    <label className="block mb-1 text-sm text-white-600">Profile Image</label>
     <input
       type="file"
+      {...register('image')}
       accept="image/*"
-      onChange={(e) => setImage(e.target.files?.[0] || null)}
+      //onChange={(e) => setImage(e.target.files?.[0] || null)}
       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 text-black bg-white file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold file:bg-yellow-600 file:text-white hover:file:bg-yellow-700"
-      required
+      // required
     />
+    {errors.image && <p className="text-red-500 text-sm mt-1">{errors.image.message}</p>}
   </div>
 
   <div>
-    <label className="block mb-1 text-sm text-gray-600">Role</label>
+    <label className="block mb-1 text-sm text-white-600">Role</label>
     <select
-      value={role}
-      onChange={(e) => setRole(e.target.value)}
+      // value={role}
+      // onChange={(e) => setRole(e.target.value)}
+      {...register('role')}
       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 text-black"
     >
       <option value="">Select Role</option>
       <option value="buyer">Buyer</option>
       <option value="seller">Seller</option>
     </select>
+    {errors.role && <p className="text-red-500 text-sm mt-1">{errors.role.message}</p>}
   </div>
 
   <button

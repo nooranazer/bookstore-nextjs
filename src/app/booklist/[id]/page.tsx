@@ -2,7 +2,8 @@
 
 import api from '@/lib/api'
 import BookType from '@/types/BookType'
-import { Edit, Delete, ArrowBack } from '@mui/icons-material'
+import { Edit, Delete, ArrowBack, CurrencyRupee, Category, Star } from '@mui/icons-material'
+import { Chip } from '@mui/material'
 import {
   Button,
   Dialog,
@@ -68,18 +69,26 @@ const ViewBook = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      <Box className="max-w-5xl mx-auto bg-white rounded-xl shadow-md p-6">
-        
-        {/* Back Button on top */}
+      <Box className="max-w-5xl mx-auto bg-white rounded-3xl shadow-lg p-8 md:p-12">
+        {/* Back Button */}
         <Box sx={{ mb: 3 }}>
           <Link href="/booklist">
-            <Button variant="outlined" startIcon={<ArrowBack />}>
+            <Button
+              variant="outlined"
+              startIcon={<ArrowBack />}
+              sx={{
+                textTransform: 'none',
+                '&:hover': {
+                  backgroundColor: '#f5f5f5',
+                },
+              }}
+            >
               Back
             </Button>
           </Link>
         </Box>
 
-        {/* Book Details Section */}
+        {/* Book Info */}
         <Box
           sx={{
             display: 'flex',
@@ -88,15 +97,19 @@ const ViewBook = () => {
             alignItems: 'flex-start',
           }}
         >
-          {/* Book Image */}
+          {/* Image */}
           <Box
             sx={{
               flex: '0 0 300px',
-              height: 500,
+              height: 450,
               overflow: 'hidden',
-              borderRadius: 2,
-              boxShadow: 1,
+              borderRadius: 4,
+              boxShadow: 3,
               mx: 'auto',
+              transition: 'transform 0.3s',
+              '&:hover': {
+                transform: 'scale(1.02)',
+              },
             }}
           >
             <img
@@ -110,26 +123,50 @@ const ViewBook = () => {
             />
           </Box>
 
-          {/* Book Info */}
+          {/* Details */}
           <Box sx={{ flex: 1 }}>
-            <Typography variant="h4" color="textSecondary" fontWeight="bold" gutterBottom>
-              {book.title}
-            </Typography>
-            <Typography variant="body1" color="textSecondary" gutterBottom>
-              <strong>Author:</strong> {book.authorname}
-            </Typography>
-            <Typography variant="body1" color="textSecondary" gutterBottom>
-              <strong>Price:</strong> ₹{book.price}
-            </Typography>
-            <Typography variant="body1" color="textSecondary" sx={{ mt: 2 }}>
-              <strong>Description:</strong> {book.description}
-            </Typography>
+            <Typography variant="h4" fontWeight="bold" color="textPrimary" gutterBottom>
+  {book.title}
+</Typography>
 
-            
+<Typography variant="subtitle1" color="text.secondary" sx={{ mb: 1 }}>
+  <strong>Author:</strong> {book.authorname}
+</Typography>
+
+<Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
+  <CurrencyRupee fontSize="small" color="action" />
+  <Typography variant="subtitle1" color="green">
+    {book.price}
+  </Typography>
+</Stack>
+
+<Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
+  <Star fontSize="small" sx={{ color: '#fbbf24' }} />
+  <Typography variant="subtitle1" color="text.secondary">
+    {book.rating} / 5
+  </Typography>
+</Stack>
+
+<Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
+  <Category fontSize="small" color="action" />
+  <Chip label={book.category} color="info" size="small" />
+</Stack>
+
+<Typography variant="body1" color="text.primary" sx={{ mt: 3, whiteSpace: 'pre-line' }}>
+  {book.description}
+</Typography>
+
+
+            {/* Seller Controls */}
             {role === 'seller' && (
-              <Stack direction="row" spacing={2} sx={{ mt: 6 }}>
+              <Stack direction="row" spacing={2} sx={{ mt: 5 }}>
                 <Link href={`/booklist/${id}/editbook`}>
-                  <Button variant="contained" color="primary" startIcon={<Edit />}>
+                  <Button
+                    variant="contained"
+                    color="info"
+                    startIcon={<Edit />}
+                    sx={{ textTransform: 'none', fontWeight: '500', px: 3 }}
+                  >
                     Edit
                   </Button>
                 </Link>
@@ -138,6 +175,7 @@ const ViewBook = () => {
                   color="error"
                   startIcon={<Delete />}
                   onClick={() => setOpenDialog(true)}
+                  sx={{ textTransform: 'none', fontWeight: '500', px: 3 }}
                 >
                   Delete
                 </Button>

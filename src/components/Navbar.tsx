@@ -1,12 +1,12 @@
-// 
-
 'use client'
 
 import Link from 'next/link'
 import { useState } from 'react'
 import { useUser } from '@/app/context/userContext'
 import { useRouter } from 'next/navigation'
-import { Menu, X } from 'lucide-react' // or use Heroicons
+import { Menu, X } from 'lucide-react'
+import { LogIn, LogOut } from 'lucide-react'
+
 
 const Navbar = () => {
   const { user, setUser } = useUser()
@@ -21,7 +21,7 @@ const Navbar = () => {
   }
 
   const pages = [
-    { name: 'Home', href: '/' },
+    { name: 'Home', href: '/booklist' },
     { name: 'Contact', href: '/contact' }
   ]
 
@@ -29,20 +29,30 @@ const Navbar = () => {
     <nav className="bg-gray-900 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          
-          {/* Logo */}
-          <div className="flex items-center gap-2">
-            <img src="/favicon.ico.png" alt="Logo" className="h-8 w-8" />
-            <Link href="/" className="text-xl font-bold">BookHive</Link>
-          </div>
-
-          {/* Desktop Nav */}
-          <div className="hidden md:flex gap-6">
-            {pages.map(page => (
-              <Link key={page.name} href={page.href} className="hover:text-yellow-400">
-                {page.name}
+          {/* Left side: Logo + Pages */}
+          <div className="flex items-center gap-6">
+            {/* Logo */}
+            <div className="flex items-center gap-2">
+              <img src="/favicon.ico.png" alt="Logo" className="h-8 w-8" />
+              <Link href="/" className="text-xl font-bold">
+                BookHive
               </Link>
-            ))}
+            </div>
+
+            {/* Pages only if logged in */}
+            {user && (
+              <div className="hidden md:flex gap-6 ml-4">
+                {pages.map((page) => (
+                  <Link
+                    key={page.name}
+                    href={page.href}
+                    className="hover:text-yellow-400"
+                  >
+                    {page.name}
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Right side buttons */}
@@ -51,19 +61,33 @@ const Navbar = () => {
               <>
                 <Link href="/profile">
                   <img
-                    src={user.image ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/${user.image}` : '/avatar.png'}
+                    src={
+                      user.image
+                        ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/${user.image}`
+                        : '/avatar.png'
+                    }
                     alt="avatar"
                     className="h-8 w-8 rounded-full border-2 border-yellow-500 object-cover"
                   />
                 </Link>
-                <button onClick={handleLogout} className="bg-yellow-500 hover:bg-yellow-600 px-3 py-1 rounded">
-                  Logout
-                </button>
+                <button
+                onClick={handleLogout}
+                className="bg-yellow-500 hover:bg-yellow-600 px-3 py-1 rounded flex items-center gap-1"
+              >
+                <LogOut className="h-4 w-4" />
+                Logout
+              </button>
+
               </>
             ) : (
-              <Link href="/login" className="bg-yellow-500 hover:bg-yellow-600 px-4 py-1 rounded">
+              <Link
+                href="/login"
+                className="bg-yellow-500 hover:bg-yellow-400 px-4 py-1 rounded flex items-center gap-1"
+              >
+                <LogIn className="h-4 w-4" />
                 Login
               </Link>
+
             )}
           </div>
 
@@ -79,28 +103,40 @@ const Navbar = () => {
       {/* Mobile Menu */}
       {menuOpen && (
         <div className="md:hidden px-4 pb-4 space-y-2">
-          {pages.map(page => (
-            <Link
-              key={page.name}
-              href={page.href}
-              onClick={() => setMenuOpen(false)}
-              className="block text-white hover:text-yellow-400"
-            >
-              {page.name}
-            </Link>
-          ))}
-
-          {user ? (
+          {user && (
             <>
-              <Link href="/profile" onClick={() => setMenuOpen(false)} className="block mt-2">
+              {pages.map((page) => (
+                <Link
+                  key={page.name}
+                  href={page.href}
+                  onClick={() => setMenuOpen(false)}
+                  className="block text-white hover:text-yellow-400"
+                >
+                  {page.name}
+                </Link>
+              ))}
+              <Link
+                href="/profile"
+                onClick={() => setMenuOpen(false)}
+                className="block mt-2"
+              >
                 Profile
               </Link>
-              <button onClick={handleLogout} className="text-left w-full mt-1 text-red-400 hover:text-red-500">
+              <button
+                onClick={handleLogout}
+                className="text-left w-full mt-1 text-red-400 hover:text-red-500"
+              >
                 Logout
               </button>
             </>
-          ) : (
-            <Link href="/login" onClick={() => setMenuOpen(false)} className="block mt-2">
+          )}
+
+          {!user && (
+            <Link
+              href="/login"
+              onClick={() => setMenuOpen(false)}
+              className="block mt-2"
+            >
               Login
             </Link>
           )}

@@ -1,7 +1,9 @@
 'use client'
 import api from '@/lib/api'
-import BookType from '@/types/BookType'
-import { Box, Button, TextField, Typography, Paper } from '@mui/material'
+import BookType, { AddBookType } from '@/types/BookType'
+import {
+  Box, Button, TextField, Typography, Paper, MenuItem
+} from '@mui/material'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import * as yup from 'yup'
@@ -11,12 +13,11 @@ import { yupResolver } from '@hookform/resolvers/yup'
 const schema = yup.object().shape({
   title: yup.string().required('Title is required'),
   authorname: yup.string().required('Author name is required'),
-  price: yup
-    .number()
-    .typeError('Price must be a number')
-    .positive('Price must be positive')
-    .required('Price is required'),
+  price: yup.number().typeError('Price must be a number').positive().required(),
   description: yup.string().required('Description is required'),
+  stock: yup.number().typeError('Stock must be a number').min(0).required(),
+  rating: yup.number().typeError('Rating must be a number').min(0).max(5).required(),
+  category: yup.string().required('Category is required')
 })
 
 const EditBook = () => {
@@ -30,7 +31,7 @@ const EditBook = () => {
     handleSubmit,
     setValue,
     formState: { errors },
-  } = useForm<BookType>({
+  } = useForm<AddBookType>({
     resolver: yupResolver(schema) as any,
   })
 
@@ -46,6 +47,9 @@ const EditBook = () => {
         setValue('authorname', data.authorname)
         setValue('price', data.price)
         setValue('description', data.description)
+        setValue('stock', data.stock)
+        setValue('rating', data.rating)
+        setValue('category', data.category)
         setSelectedImage(data.image)
         setPreviewUrl(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${data.image}`)
       })
@@ -60,12 +64,15 @@ const EditBook = () => {
     }
   }
 
-  const onSubmit = (data: BookType) => {
+  const onSubmit = (data: AddBookType) => {
     const formData = new FormData()
     formData.append('title', data.title)
     formData.append('authorname', data.authorname)
     formData.append('price', data.price.toString())
     formData.append('description', data.description)
+    formData.append('stock', data.stock ? data.stock.toString() : '0')
+    formData.append('rating', String(data.rating))
+    formData.append('category', data.category)
 
     if (selectedImage instanceof File) {
       formData.append('image', selectedImage)
@@ -86,18 +93,18 @@ const EditBook = () => {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', backgroundColor: '#f5f5f5', py: 8, px: 2 }}>
+    <Box sx={{ minHeight: '100vh', backgroundColor: '#f0f4f9', py: 8, px: 2 }}>
       <Paper
-        elevation={3}
+        elevation={4}
         sx={{
-          maxWidth: 600,
+          maxWidth: 640,
           mx: 'auto',
           p: 4,
           borderRadius: 3,
           backgroundColor: 'white',
         }}
       >
-        <Typography variant="h4" align="center" gutterBottom>
+        <Typography variant="h4" align="center" gutterBottom fontWeight="bold" color="primary">
           ✏️ Edit Book
         </Typography>
 
@@ -113,7 +120,6 @@ const EditBook = () => {
           component="form"
           onSubmit={handleSubmit(onSubmit)}
           noValidate
-          autoComplete="off"
           sx={{ mt: 3 }}
         >
           <Controller
@@ -158,12 +164,65 @@ const EditBook = () => {
               <TextField
                 {...field}
                 fullWidth
-                label="Price"
+                label="Price (₹)"
                 type="number"
                 variant="outlined"
                 margin="normal"
                 error={!!errors.price}
                 helperText={errors.price?.message}
+              />
+            )}
+          />
+
+          <Controller
+            name="stock"
+            control={control}
+            defaultValue={0}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                fullWidth
+                label="Stock"
+                type="number"
+                variant="outlined"
+                margin="normal"
+                error={!!errors.stock}
+                helperText={errors.stock?.message}
+              />
+            )}
+          />
+
+          <Controller
+            name="rating"
+            control={control}
+            defaultValue={0}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                fullWidth
+                label="Rating (0 to 5)"
+                type="number"
+                variant="outlined"
+                margin="normal"
+                error={!!errors.rating}
+                helperText={errors.rating?.message}
+              />
+            )}
+          />
+
+          <Controller
+            name="category"
+            control={control}
+            defaultValue=""
+            render={({ field }) => (
+              <TextField
+                {...field}
+                fullWidth
+                label="Category"
+                variant="outlined"
+                margin="normal"
+                error={!!errors.category}
+                helperText={errors.category?.message}
               />
             )}
           />
@@ -201,9 +260,9 @@ const EditBook = () => {
             type="submit"
             fullWidth
             variant="contained"
-            sx={{ backgroundColor: '#4a91d8ff' }}
+            sx={{ backgroundColor: '#1976d2', py: 1.2 }}
           >
-            Update Book
+            ✅ Update Book
           </Button>
         </Box>
       </Paper>

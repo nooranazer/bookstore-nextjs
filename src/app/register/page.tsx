@@ -12,15 +12,18 @@ const schema = yup.object({
   email: yup.string().email('Invalid email').required('Email is required'),
   password: yup.string().min(6, 'Password must be at least 6 characters'),
   role: yup.string().required('Role is required'),
-  image: yup
-    .mixed()
-    .required('Image is required')
-    .test('fileType', 'Only image files are allowed', (value) => {
-      if (value instanceof File) {
-        return ['image/jpeg', 'image/png', 'image/webp'].includes(value.type)
-      }
-      return false
-    })
+ image: yup
+  .mixed()
+  .required('Image is required')
+  .test('fileType', 'Only image files are allowed', (value: any) => {
+  const file = value instanceof File ? value : value?.[0];
+  return (
+    file &&
+    ['image/jpeg', 'image/png', 'image/webp'].includes(file.type)
+  );
+})
+
+
 })
 
 

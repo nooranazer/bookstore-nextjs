@@ -158,6 +158,23 @@ const AddBook = () => {
           backdropFilter: 'blur(3px)'
         }}
       >
+        <Button
+          variant="outlined"
+          onClick={() => router.back()}
+          sx={{
+            mb: 2,
+            color: '#fff',
+            borderColor: '#ccc',
+            textTransform: 'none',
+            '&:hover': {
+              borderColor: '#fff',
+              backgroundColor: 'rgba(255,255,255,0.1)'
+            }
+          }}
+        >
+          ⬅ Back
+        </Button>
+
         <Typography
           variant="h4"
           align="center"

@@ -3,10 +3,10 @@ type BookType = {
   authorname: string
   price: number
   image?: string | File 
-  role:string
   rating: number
   category: string 
   description: string
+    _id?: string  
 }
 
 export default BookType;

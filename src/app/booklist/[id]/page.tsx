@@ -113,7 +113,7 @@ const ViewBook = () => {
               },
             }}
           >
-            <div style={{ position: 'relative', width: '100%', height: '300px' }}>
+            <div style={{ position: 'relative', width: '100%', height: '100%' }}>
               <Image
                 src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${book.image}`}
                 alt={book.title}

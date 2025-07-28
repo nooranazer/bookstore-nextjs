@@ -113,6 +113,7 @@ import BookType from '@/types/BookType'
 import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import { Pagination } from '@mui/material'
+import Image from 'next/image'
 
 const BookList = () => {
   const [book, setBook] = useState<BookType[]>([])
@@ -175,11 +176,13 @@ const BookList = () => {
                 key={index}
                 className="bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-transform duration-300 hover:-translate-y-1 p-6 border"
               >
-                <img
-                  src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${b.image}`}
-                  alt={b.title}
-                  className="w-auto h-auto object-cover rounded-xl mb-4"
-                />
+              <Image
+              src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${b.image}`}
+              alt={b.title}
+              width={300} 
+              height={200}
+              className="w-auto h-auto object-cover rounded-xl mb-4"
+              />
                 <h3 className="text-xl font-semibold text-gray-800 text-center mb-2 font-serif">
                   {b.title}
                 </h3>
@@ -197,7 +200,7 @@ const BookList = () => {
               <div className="mt-4 text-center">
                   <Link
                     href={`/booklist/${b._id}`}
-                    className="text-blue-600 hover:underline font-medium"
+                    className="text-blue-600  font-medium"
                   >
                     View Details
                   </Link>

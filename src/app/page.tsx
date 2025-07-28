@@ -71,6 +71,7 @@
 import Link from 'next/link'
 import { useUser } from '@/app/context/userContext'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 
 const HomePage = () => {
   const { user } = useUser()
@@ -121,11 +122,14 @@ const HomePage = () => {
               key={index}
               className="bg-white border rounded-xl p-4 shadow-md hover:shadow-xl transition flex flex-col items-center"
             >
-              <img
+             <div className="relative h-64 w-full mb-4 rounded overflow-hidden">
+              <Image
                 src={book.image}
                 alt={book.title}
-                className="h-64 w-full object-contain mb-4 rounded"
+                fill
+                className="object-contain"
               />
+            </div>
               <h3 className="text-lg font-semibold text-center">{book.title}</h3>
               <p className="text-sm text-yellow-600 font-medium mb-2">⭐ {book.rating}</p>
 

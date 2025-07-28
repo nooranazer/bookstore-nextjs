@@ -9,6 +9,8 @@ import { useEffect, useState } from 'react'
 import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
+import Image from 'next/image'
+
 
 const schema = yup.object().shape({
   title: yup.string().required('Title is required'),
@@ -109,12 +111,17 @@ const EditBook = () => {
         </Typography>
 
         {previewUrl && (
-          <img
+        <div className="relative w-full h-52 mb-4 rounded-md overflow-hidden">
+          <Image
             src={previewUrl}
             alt="Preview"
-            className="w-full h-52 object-cover rounded-md mb-4"
+            fill
+            className="object-cover"
+            style={{ borderRadius: '0.375rem' }} // same as rounded-md
           />
-        )}
+        </div>
+      )}
+
 
         <Box
           component="form"

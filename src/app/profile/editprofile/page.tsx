@@ -7,6 +7,7 @@ import * as yup from 'yup'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useUser } from '@/app/context/userContext'
+import Image from 'next/image'
 
 
 const schema = yup.object({
@@ -58,7 +59,7 @@ const EditProfile = () => {
         alert('No user found')
         console.error('No user found:', err)
       })
-  }, [])
+  }, [setValue])
 
   // const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
   //   const { name, value } = e.target
@@ -144,12 +145,14 @@ const EditProfile = () => {
           />
         </div>
 
+       
         {preview && (
-          <div className="text-center">
-            <img
+          <div className="relative w-40 h-40 mx-auto mb-4 rounded-full overflow-hidden border">
+            <Image
               src={preview}
               alt="Profile"
-              className="w-40 h-40 rounded-full object-cover border mx-auto"
+              fill
+              className="object-cover"
             />
           </div>
         )}

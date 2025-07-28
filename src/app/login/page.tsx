@@ -82,35 +82,36 @@ const onSubmit = async (data: LoginFormData) => {
     const res = await api.post('/auth/', {
       email: data.email,
       password: data.password,
-    });
+    }).then(async (res)=> {
+        const { token, data: userData } = res.data;
+        console.log('Login API response:', res);
 
-    const { token, data: userData } = res.data;
 
-    if (!token || !userData) {
-      alert('Login failed');
-      return;
-    }
+        if (!token || !userData) {
+          alert('Login failed');
+          return;
+        }
 
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(userData));
-    setUser(userData);
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(userData));
+        setUser(userData);
 
-    // Set server-side cookie
-    const cookieRes = await fetch('/api/set-cookie', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token, role: userData.role }),
-    });
+        
+        // Set server-side cookie
+        const cookie = await fetch('/api/set-cookie',{
+          method: 'POST',
+          headers:{'Content-Type' : 'application/json'},
+          body: JSON.stringify({token: token, role: userData.role })
+        })
 
-    if (!cookieRes.ok) {
-      const errText = await cookieRes.text();
-      console.error('Cookie error:', errText);
-      alert('Server cookie error');
-      return;
-    }
-
-    console.log('✅ Cookies set, redirecting...');
-    router.push('/booklist');
+        if (!cookie.ok) {
+          console.warn('Failed to set cookies')
+        }
+        
+        router.push('/booklist');
+    }).catch((err)=> {
+      console.log(err,"Error")
+    })
   } catch (err) {
     console.error('Login failed:', err);
     alert('Invalid credentials');

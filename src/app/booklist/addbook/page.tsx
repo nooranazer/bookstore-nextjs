@@ -10,6 +10,7 @@ import {
   Typography,
   useMediaQuery
 } from '@mui/material'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import React, { useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -185,11 +186,14 @@ const AddBook = () => {
         </Typography>
 
         {previewUrl && (
-          <img
-            src={previewUrl}
-            alt="Preview"
-            className="w-full h-52 object-cover rounded-md mb-4"
-          />
+          <Image
+          src={previewUrl}
+          alt="Preview"
+          width={500} // set a width
+          height={200} // set a height
+          className="w-full h-52 object-cover rounded-md mb-4"
+          style={{ width: '100%', height: '208px', objectFit: 'cover' }}
+        />
         )}
 
         <Box

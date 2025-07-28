@@ -1,51 +1,42 @@
-
-// import { NextResponse } from 'next/server'
-// import type { NextRequest } from 'next/server'
-
-// // Publicly accessible paths
-// const publicPaths = ['/', '/login', '/register', '/about']
-
-// export function middleware(request: NextRequest) {
-//   console.log('Middleware running')
-//   const token = request.cookies.get('token')?.value
-//   const pathname = request.nextUrl.pathname
-
-//   // If the current path is public
-//   const isPublic = publicPaths.includes(pathname)
-
-//   // Redirect to login if not public and no token
-//   if (!isPublic && !token) {
-//     return NextResponse.redirect(new URL('/login', request.url))
-//   }
-
-//   return NextResponse.next()
-// }
-
-// export const config = {
-//   matcher: [
-//     '/((?!_next/static|_next/image|favicon.ico|.*\\.svg|.*\\.png).*)',
-//   ],
-// }
-
-import { NextRequest, NextResponse } from 'next/server';
-
-const publicPaths = ['/', '/login', '/register', '/api/set-cookie'];
+import { NextRequest, NextResponse } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  const token = request.cookies.get('token')?.value;
-  const path = request.nextUrl.pathname;
+  const token = request.cookies.get('token')?.value
+  const publicPaths = ['/', '/login', '/register']
 
-  if (publicPaths.includes(path)) {
-    return NextResponse.next();
+  const isPublicPath = publicPaths.includes(request.nextUrl.pathname)
+
+  // ✅ If it's a public page and user is logged in, redirect to dashboard or books page
+  if (isPublicPath && token) {
+    return NextResponse.redirect(new URL('/booklist', request.url))
   }
 
-  if (!token) {
-    return NextResponse.redirect(new URL('/login', request.url));
+
+  // 🔒 If it's a protected route and user is NOT logged in
+  if (!isPublicPath && !token) {
+    return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  return NextResponse.next();
+  // ✅ Otherwise, continue
+  return NextResponse.next()
 }
 
 export const config = {
-  matcher: ['/booklist', '/addbook', '/editbook/:path*', '/api/:path*'], // list all protected routes
+  matcher: ['/booklist', '/addbook', '/editbook/:path*', '/profile', '/editprofile', '/login', '/register'], // list all protected routes
 };
+
+// export const config = {
+//   matcher: [
+//     /*
+//      * Match all request paths except for the ones starting with:
+//      * - _next/static (static files)
+//      * - favicon.ico
+//      * - images or API routes if needed
+//      */
+//     '/((?!_next/static|_next/image|favicon.ico|api|images).*)',
+//   ],
+// }
+
+
+
+

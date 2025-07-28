@@ -4,6 +4,7 @@ import api from '@/lib/api'
 import { UserType } from '@/types/UserType'
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 const ViewProfile = () => {
   const [profile, setProfile] = useState<UserType | null>(null)
@@ -34,12 +35,16 @@ const ViewProfile = () => {
         <div className="max-w-md w-full bg-white/10 backdrop-blur-md border border-white/20 shadow-xl rounded-2xl p-8 text-white relative overflow-hidden transition-transform hover:scale-[1.01]">
         
           <div className="flex justify-center mb-6">
-            <img
-              src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${profile.image}`}
-              alt="Profile"
-              className="w-32 h-32 rounded-full border-4 border-white shadow-md object-cover"
-            />
+            <div className="relative w-32 h-32 rounded-full border-4 border-white shadow-md overflow-hidden">
+              <Image
+                src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${profile.image}`}
+                alt="Profile"
+                fill
+                className="object-cover rounded-full"
+              />
+            </div>
           </div>
+
 
         
           <div className="text-center">

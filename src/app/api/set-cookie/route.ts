@@ -3,20 +3,32 @@ import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { token, role } = body;
+    const { token, role } = await req.json();
 
     if (!token || !role) {
-      return NextResponse.json({ error: 'Missing token or role' }, { status: 400 });
+      return NextResponse.json({ message: 'Missing token or role' }, { status: 400 });
     }
 
-    // Set cookies
-    cookies().set('token', token, { path: '/' });
-    cookies().set('role', role, { path: '/' });
+    const cookieStore = cookies();
+    cookieStore.set('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', 
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24,
+    });
+
+    cookieStore.set('role', role, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24,
+    });
 
     return NextResponse.json({ message: 'Cookies set successfully' });
-  } catch (error) {
-    console.error('Error setting cookies:', error);
-    return NextResponse.json({ error: 'Failed to set cookies' }, { status: 500 });
+  } catch (err) {
+    console.error('Cookie error:', err);
+    return NextResponse.json({ message: 'Server error while setting cookies' }, { status: 500 });
   }
 }

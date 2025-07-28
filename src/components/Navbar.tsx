@@ -6,6 +6,7 @@ import { useUser } from '@/app/context/userContext'
 import { useRouter } from 'next/navigation'
 import { Menu, X } from 'lucide-react'
 import { LogIn, LogOut } from 'lucide-react'
+import Image from 'next/image'
 
 
 const Navbar = () => {
@@ -13,7 +14,13 @@ const Navbar = () => {
   const router = useRouter()
   const [menuOpen, setMenuOpen] = useState(false)
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+
+    await fetch('/api/clear-cookie', {
+      method: 'POST',
+      credentials: 'include',
+    })
+
     localStorage.removeItem('user')
     localStorage.removeItem('token')
     setUser(null)
@@ -33,7 +40,13 @@ const Navbar = () => {
           <div className="flex items-center gap-6">
             {/* Logo */}
             <div className="flex items-center gap-2">
-              <img src="/favicon.ico.png" alt="Logo" className="h-8 w-8" />
+             <Image
+              src="/favicon.ico.png"
+              alt="Logo"
+              width={32}
+              height={32}
+              className="h-8 w-8"
+            />
               <Link href="/" className="text-xl font-bold">
                 BookHive
               </Link>
@@ -60,15 +73,18 @@ const Navbar = () => {
             {user ? (
               <>
                 <Link href="/profile">
-                  <img
-                    src={
-                      user.image
-                        ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/${user.image}`
-                        : '/avatar.png'
-                    }
-                    alt="avatar"
-                    className="h-8 w-8 rounded-full border-2 border-yellow-500 object-cover"
-                  />
+                  <div className="h-8 w-8 relative">
+                    <Image
+                      src={
+                        user.image
+                          ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/${user.image}`
+                          : '/avatar.png'
+                      }
+                      alt="avatar"
+                      fill
+                      className="rounded-full border-2 border-yellow-500 object-cover"
+                    />
+                  </div>
                 </Link>
                 <button
                 onClick={handleLogout}

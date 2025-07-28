@@ -20,9 +20,10 @@ const Contact = () => {
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-2xl mx-auto bg-white shadow-md rounded-xl p-8">
         <h1 className="text-3xl font-bold text-center text-gray-800 mb-4">Contact Us</h1>
-        <p className="text-center text-gray-600 mb-8">
-          We'd love to hear from you! Fill out the form below to get in touch.
-        </p>
+       <p className="text-center text-gray-600 mb-8">
+        {"We'd love to hear from you! Fill out the form below to get in touch."}
+      </p>
+
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>

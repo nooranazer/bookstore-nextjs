@@ -14,6 +14,7 @@ import {
   Typography,
   Box,
 } from '@mui/material'
+import Image from 'next/image'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
@@ -112,15 +113,15 @@ const ViewBook = () => {
               },
             }}
           >
-            <img
-              src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${book.image}`}
-              alt={book.title}
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-              }}
-            />
+            <div style={{ position: 'relative', width: '100%', height: '300px' }}>
+              <Image
+                src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${book.image}`}
+                alt={book.title}
+                fill
+                style={{ objectFit: 'cover' }}
+              />
+            </div>
+            
           </Box>
 
           {/* Details */}

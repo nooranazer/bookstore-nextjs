@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup';
+import { useUser } from '../context/userContext';
 
 //yup schema
 const schema = yup.object({
@@ -30,6 +31,7 @@ const schema = yup.object({
 
 const RegisterPage = () => {
   const router = useRouter()
+  const { setUser } = useUser();
   // const [ username, setUsername] = useState('')
   // const [email, setEmail] = useState('');
   // const [password, setPassword] = useState('');
@@ -41,32 +43,49 @@ const RegisterPage = () => {
   })
 
   
-  const handleRegister = async (data: any) => {
-   // e.preventDefault();
+  const handleRegister = (data: any) => {
+  const formData = new FormData();
+  formData.append('username', data.username);
+  formData.append('email', data.email);
+  formData.append('password', data.password);
+  formData.append('role', data.role);
+  formData.append('image', data.image[0]);
 
-    const formData = new FormData()
-    formData.append('username', data.username) //added data in validation
-    formData.append('email', data.email)
-    formData.append('password', data.password)
-    formData.append('role', data.role)
-    formData.append('image', data.image[0])
-
-    const res = await api.post('/auth/register', formData, {   
-    }).then((res) => {
-      const {token, data } = res.data
+  api.post('/auth/register', formData)
+    .then((res) => {
+      const { token, data: user } = res.data;
 
       if (token) {
-        localStorage.setItem('token',token)
+        localStorage.setItem('token', token);
       }
-      if (data) {
-            localStorage.setItem('user', JSON.stringify(data)); 
+
+      if (user) {
+        localStorage.setItem('user', JSON.stringify(user));
+        setUser(user);
       }
-      router.push('/booklist')
-    }).catch((err) => {
-     // console.log(err,"erorrrr........")
-      alert(err.response.data.message)
+
+      // set cookie
+      return fetch('/api/set-cookie', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, role: user.role }),
+      });
     })
-  }
+    .then((res) => {
+      if (!res.ok) {
+        throw new Error('Failed to set cookie');
+      }
+      return res.json();
+    })
+    .then(() => {
+      router.push('/booklist');
+    })
+    .catch((err) => {
+      console.error('Registration error:', err);
+      alert(err?.response?.data?.message || err.message || 'Registration failed');
+    });
+};
+
   return (
     <div className="flex min-h-screen">
       {/* Left image side */}

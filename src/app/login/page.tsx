@@ -82,6 +82,7 @@ const onSubmit = async (data: LoginFormData) => {
     const res = await api.post('/auth/', {
       email: data.email,
       password: data.password,
+      
     }).then(async (res)=> {
         const { token, data: userData } = res.data;
         console.log('Login API response:', res);
@@ -107,7 +108,7 @@ const onSubmit = async (data: LoginFormData) => {
         if (!cookie.ok) {
           console.warn('Failed to set cookies')
         }
-        
+
         router.push('/booklist');
     }).catch((err)=> {
       console.log(err,"Error")

@@ -77,46 +77,42 @@
 //       }
 //     };
 
-const onSubmit = async (data: LoginFormData) => {
-  try {
-    const res = await api.post('/auth/', {
-      email: data.email,
-      password: data.password,
-      
-    }).then(async (res)=> {
-        const { token, data: userData } = res.data;
-        console.log('Login API response:', res);
+const onSubmit = (data: LoginFormData) => {
+  api.post('/auth/', {
+    email: data.email,
+    password: data.password,
+  })
+    .then((res) => {
+      const { token, data: userData } = res.data;
+      console.log('Login API response:', res);
 
+      if (!token || !userData) {
+        alert('Login failed');
+        return;
+      }
 
-        if (!token || !userData) {
-          alert('Login failed');
-          return;
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(userData));
+      setUser(userData);
+
+      // Set cookie using fetch
+      return fetch('/api/set-cookie', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: token, role: userData.role }),
+      }).then((cookieRes) => {
+        if (!cookieRes.ok) {
+          console.warn('Failed to set cookies');
         }
 
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(userData));
-        setUser(userData);
-
-        
-        // Set server-side cookie
-        const cookie = await fetch('/api/set-cookie',{
-          method: 'POST',
-          headers:{'Content-Type' : 'application/json'},
-          body: JSON.stringify({token: token, role: userData.role })
-        })
-
-        if (!cookie.ok) {
-          console.warn('Failed to set cookies')
-        }
-
+        alert('Login successful'); 
         router.push('/booklist');
-    }).catch((err)=> {
-      console.log(err,"Error")
+      });
     })
-  } catch (err) {
-    console.error('Login failed:', err);
-    alert('Invalid credentials');
-  }
+    .catch((err) => {
+      console.error('Login failed:', err);
+      alert('Invalid credentials'); 
+    });
 };
 
 
